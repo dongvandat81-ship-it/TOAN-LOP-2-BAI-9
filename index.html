@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ai Là Triệu Phú - Toán Lớp 2 (Thêm, Bớt Một Số Đơn Vị)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: radial-gradient(circle at center, #0f1c3f 0%, #080d1e 65%, #02040a 100%);
+      color: #f7fafc;
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    .font-game {
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Hexagonal / Diamond cut button styling */
+    .btn-hex {
+      position: relative;
+      background: linear-gradient(180deg, #10214d 0%, #09132e 100%);
+      border: 2px solid #2f5da6;
+      box-shadow: 0 0 10px rgba(47, 93, 166, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transition: all 0.25s ease;
+      clip-path: polygon(14px 0%, calc(100% - 14px) 0%, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0% 50%);
+    }
+
+    .btn-hex:hover:not(:disabled) {
+      background: linear-gradient(180deg, #1c3987 0%, #0f2257 100%);
+      border-color: #f6ad55;
+      box-shadow: 0 0 20px rgba(246, 173, 85, 0.6);
+      transform: scale(1.015);
+    }
+
+    /* Selected state (Orange pulse) */
+    .btn-hex.selected {
+      background: linear-gradient(180deg, #dd6b20 0%, #9c4221 100%) !important;
+      border-color: #fbd38d !important;
+      box-shadow: 0 0 25px rgba(237, 137, 54, 0.9) !important;
+      animation: pulse-orange 0.8s infinite alternate;
+    }
+
+    /* Correct state (Green flash) */
+    .btn-hex.correct {
+      background: linear-gradient(180deg, #22543d 0%, #1c4532 100%) !important;
+      border-color: #68d391 !important;
+      box-shadow: 0 0 25px rgba(72, 187, 120, 0.9) !important;
+      animation: flash-green 0.5s infinite alternate;
+    }
+
+    /* Wrong state (Red flash) */
+    .btn-hex.wrong {
+      background: linear-gradient(180deg, #742a2a 0%, #4a1d1d 100%) !important;
+      border-color: #fc8181 !important;
+      box-shadow: 0 0 25px rgba(245, 101, 101, 0.9) !important;
+    }
+
+    /* Hidden/Eliminated choice */
+    .btn-hex.eliminated {
+      visibility: hidden;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    @keyframes pulse-orange {
+      from { box-shadow: 0 0 15px rgba(237, 137, 54, 0.6); }
+      to { box-shadow: 0 0 30px rgba(237, 137, 54, 1); }
+    }
+
+    @keyframes flash-green {
+      from { border-color: #48bb78; }
+      to { border-color: #ffffff; }
+    }
+
+    /* Ladder styling */
+    .ladder-item {
+      transition: all 0.3s ease;
+    }
+    .ladder-item.active {
+      background: linear-gradient(90deg, rgba(237, 137, 54, 0.8) 0%, rgba(221, 107, 32, 0.3) 100%);
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 0 15px rgba(237, 137, 54, 0.7);
+      border-left: 4px solid #f6ad55;
+    }
+    .ladder-item.milestone {
+      color: #faf089;
+      font-weight: 700;
+    }
+
+    /* Lifeline buttons */
+    .lifeline-btn {
+      transition: all 0.25s ease;
+      background: radial-gradient(circle, #1a2a5e 0%, #0d1633 100%);
+      border: 2px solid #3182ce;
+    }
+    .lifeline-btn:hover:not(:disabled) {
+      border-color: #ffd700;
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+    .lifeline-btn:disabled {
+      opacity: 0.3;
+      filter: grayscale(100%);
+      cursor: not-allowed;
+      border-color: #4a5568;
+    }
+
+    /* Custom print style for certificate */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-card {
+        border: 4px double #d69e2e !important;
+        box-shadow: none !important;
+        background: white !important;
+        color: black !important;
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <header class="w-full bg-[#0a1128]/80 backdrop-blur border-b border-blue-900/50 py-3 px-4 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center shadow-lg shadow-yellow-500/30">
+        <span class="text-xl">🏆</span>
+      </div>
+      <div>
+        <h1 class="font-game font-extrabold text-lg sm:text-xl tracking-wider text-yellow-400 uppercase">
+          Ai Là Triệu Phú
+        </h1>
+        <p class="text-xs text-blue-300 font-semibold hidden sm:block">Toán Lớp 2 • Thêm, Bớt Một Số Đơn Vị</p>
+      </div>
+    </div>
+
+    <!-- Right utility buttons -->
+    <div class="flex items-center gap-2">
+      <button id="sound-toggle-btn" onclick="toggleAudio()" class="px-3 py-1.5 rounded-full bg-blue-950 border border-blue-600/60 text-xs sm:text-sm font-semibold flex items-center gap-1.5 text-blue-200 hover:text-yellow-300 transition">
+        <span id="sound-icon">🔊</span>
+        <span id="sound-text" class="hidden md:inline">Âm thanh: BẬT</span>
+      </button>
+      <button onclick="openRulesModal()" class="px-3 py-1.5 rounded-full bg-blue-950 border border-blue-600/60 text-xs sm:text-sm font-semibold text-blue-200 hover:text-yellow-300 transition">
+        ❓ Luật chơi
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-grow flex items-center justify-center p-3 sm:p-6 w-full max-w-7xl mx-auto">
+
+    <!-- ============================================== -->
+    <!-- MÀN HÌNH 1: ĐĂNG KÝ THÍ SINH & KHỞI ĐỘNG GHẾ NÓNG -->
+    <!-- ============================================== -->
+    <div id="start-screen" class="w-full max-w-xl bg-gradient-to-b from-[#0e1a3d] to-[#081026] border-2 border-blue-700/60 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-blue-950/80 text-center relative overflow-hidden">
+      <!-- Glow background decoration -->
+      <div class="absolute -top-24 -left-24 w-52 h-52 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-52 h-52 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Millionaire Emblem -->
+      <div class="relative mx-auto w-28 h-28 mb-4">
+        <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-yellow-500 via-amber-300 to-yellow-600 animate-spin" style="animation-duration: 18s;"></div>
+        <div class="absolute inset-1 rounded-full bg-[#091129] flex items-center justify-center border-2 border-yellow-400">
+          <span class="text-4xl">💡</span>
+        </div>
+      </div>
+
+      <h2 class="font-game font-black text-2xl sm:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-400 to-amber-500 mb-2">
+        BÀI TẬP TRẮC NGHIỆM TƯƠNG TÁC
+      </h2>
+      <p class="text-blue-200 text-sm sm:text-base font-medium mb-6">
+        Bài 9: Bài toán về thêm, bớt một số đơn vị (Toán 2 - KNTT)
+      </p>
+
+      <form id="info-form" onsubmit="startGame(event)" class="space-y-4 text-left">
+        <div>
+          <label for="hoTen" class="block text-sm font-bold text-yellow-300 mb-1 flex items-center gap-1.5">
+            <span>👤</span> Họ và tên học sinh <span class="text-red-400">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="hoTen" 
+            placeholder="Ví dụ: Nguyễn Văn An" 
+            required 
+            class="w-full px-4 py-3 rounded-xl bg-blue-950/80 border border-blue-500/50 text-white placeholder-blue-400/60 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent font-medium"
+          >
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="lop" class="block text-sm font-bold text-yellow-300 mb-1 flex items-center gap-1.5">
+              <span>🏫</span> Lớp <span class="text-red-400">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="lop" 
+              placeholder="Ví dụ: 2A1" 
+              required 
+              class="w-full px-4 py-3 rounded-xl bg-blue-950/80 border border-blue-500/50 text-white placeholder-blue-400/60 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent font-medium"
+            >
+          </div>
+
+          <div>
+            <label for="stt" class="block text-sm font-bold text-yellow-300 mb-1 flex items-center gap-1.5">
+              <span>🔢</span> Số thứ tự (STT)
+            </label>
+            <input 
+              type="number" 
+              id="stt" 
+              placeholder="Ví dụ: 05" 
+              min="1"
+              max="99"
+              class="w-full px-4 py-3 rounded-xl bg-blue-950/80 border border-blue-500/50 text-white placeholder-blue-400/60 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent font-medium"
+            >
+          </div>
+        </div>
+
+        <!-- Avatar Selection -->
+        <div class="pt-1">
+          <label class="block text-sm font-bold text-yellow-300 mb-2 flex items-center gap-1.5">
+            <span>⭐</span> Chọn nhân vật đại diện:
+          </label>
+          <div class="grid grid-cols-5 gap-2" id="avatar-selector">
+            <button type="button" onclick="selectAvatar('🦁')" class="avatar-option p-2 text-2xl rounded-xl border border-yellow-400 bg-yellow-500/20 hover:scale-110 transition active:scale-95 text-center">🦁</button>
+            <button type="button" onclick="selectAvatar('🚀')" class="avatar-option p-2 text-2xl rounded-xl border border-blue-600 bg-blue-900/30 hover:scale-110 transition active:scale-95 text-center">🚀</button>
+            <button type="button" onclick="selectAvatar('🦄')" class="avatar-option p-2 text-2xl rounded-xl border border-blue-600 bg-blue-900/30 hover:scale-110 transition active:scale-95 text-center">🦄</button>
+            <button type="button" onclick="selectAvatar('🦉')" class="avatar-option p-2 text-2xl rounded-xl border border-blue-600 bg-blue-900/30 hover:scale-110 transition active:scale-95 text-center">🦉</button>
+            <button type="button" onclick="selectAvatar('👑')" class="avatar-option p-2 text-2xl rounded-xl border border-blue-600 bg-blue-900/30 hover:scale-110 transition active:scale-95 text-center">👑</button>
+          </div>
+        </div>
+
+        <div class="pt-4">
+          <button 
+            type="submit" 
+            class="w-full py-4 px-6 rounded-2xl font-game font-extrabold text-lg text-slate-900 bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500 hover:from-yellow-300 hover:to-amber-400 shadow-lg shadow-yellow-500/40 hover:shadow-yellow-400/60 transform hover:-translate-y-0.5 active:translate-y-0 transition duration-200 uppercase tracking-wider"
+          >
+            🚀 BƯỚC VÀO GHẾ NÓNG!
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MÀN HÌNH 2: TRƯỜNG QUAY AI LÀ TRIỆU PHÚ (QUIZ) -->
+    <!-- ============================================== -->
+    <div id="quiz-screen" class="hidden w-full flex flex-col lg:flex-row gap-6 items-stretch justify-center">
+
+      <!-- LEFT: GAME BOARD -->
+      <div class="flex-1 flex flex-col justify-between max-w-4xl bg-gradient-to-b from-[#0d1633] via-[#091026] to-[#040817] border-2 border-blue-600/50 rounded-3xl p-4 sm:p-6 shadow-2xl relative">
+        
+        <!-- Top bar: Player Info & Lifelines & Timer -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-blue-800/40">
+          <div class="flex items-center gap-2.5">
+            <span id="player-avatar-badge" class="text-3xl p-1 bg-blue-950 rounded-xl border border-yellow-400/50 shadow">🦁</span>
+            <div>
+              <div id="player-name-display" class="font-bold text-white text-base leading-tight">Thí sinh</div>
+              <div id="player-class-display" class="text-xs text-yellow-300 font-semibold">Lớp 2A1</div>
+            </div>
+          </div>
+
+          <!-- Lifelines list -->
+          <div class="flex items-center gap-2">
+            <!-- 50:50 -->
+            <button id="lifeline-5050" onclick="useLifeline5050()" title="Trợ giúp 50:50 (Bỏ 2 đáp án sai)" class="lifeline-btn w-11 h-11 rounded-full flex items-center justify-center font-game font-bold text-xs text-yellow-300 shadow">
+              50:50
+            </button>
+            <!-- Call Teacher / Phone -->
+            <button id="lifeline-call" onclick="useLifelineCall()" title="Gọi điện cho Thầy Cô / Người thân" class="lifeline-btn w-11 h-11 rounded-full flex items-center justify-center text-lg text-yellow-300 shadow">
+              📞
+            </button>
+            <!-- Audience Poll -->
+            <button id="lifeline-audience" onclick="useLifelineAudience()" title="Hỏi ý kiến khán giả trường quay" class="lifeline-btn w-11 h-11 rounded-full flex items-center justify-center text-lg text-yellow-300 shadow">
+              👥
+            </button>
+            <!-- Swap Question -->
+            <button id="lifeline-swap" onclick="useLifelineSwap()" title="Đổi câu hỏi khác" class="lifeline-btn w-11 h-11 rounded-full flex items-center justify-center text-lg text-yellow-300 shadow">
+              🔄
+            </button>
+          </div>
+
+          <!-- Badge thân thiện: Tự do làm bài không giới hạn thời gian -->
+          <div class="flex items-center gap-1.5 bg-blue-950/90 border border-emerald-400/50 rounded-full px-3.5 py-1.5 shadow-inner">
+            <span class="text-emerald-400 text-base">🌱</span>
+            <span class="font-game font-bold text-xs sm:text-sm text-emerald-300 tracking-wide">Thoải mái suy nghĩ</span>
+          </div>
+        </div>
+
+        <!-- Question meta indicators -->
+        <div class="flex items-center justify-between text-xs sm:text-sm font-semibold text-blue-300 mt-4 px-2">
+          <div class="flex items-center gap-2">
+            <span id="level-badge" class="px-3 py-1 rounded-full bg-blue-900 border border-blue-400/40 text-yellow-300 uppercase tracking-wider text-xs">
+              Mức độ 1: Khởi động
+            </span>
+            <span id="type-badge" class="px-2.5 py-1 rounded-full bg-indigo-950 text-indigo-300 text-xs hidden sm:inline">
+              1 đáp án đúng
+            </span>
+          </div>
+          <div class="text-amber-300 font-game font-bold text-base" id="current-prize-tag">
+            CÂU 1: 200.000 VNĐ
+          </div>
+        </div>
+
+        <!-- Question Text Hexagonal Frame -->
+        <div class="my-6 relative">
+          <div class="btn-hex w-full py-6 px-6 sm:px-10 text-center min-h-[110px] flex items-center justify-center">
+            <h3 id="question-text" class="font-bold text-lg sm:text-2xl text-yellow-100 tracking-wide leading-relaxed">
+              Đang tải nội dung câu hỏi...
+            </h3>
+          </div>
+        </div>
+
+        <!-- Answer Options 2x2 Grid -->
+        <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 my-2">
+          <!-- Filled by JavaScript -->
+        </div>
+
+        <!-- Host status message / Guide banner -->
+        <div id="host-message-banner" class="mt-4 py-2.5 px-4 rounded-xl bg-blue-950/80 border border-blue-600/40 text-center text-xs sm:text-sm text-blue-200">
+          🎙️ <span id="host-speech">Hãy đọc kỹ đề bài và chọn phương án chính xác nhất nhé!</span>
+        </div>
+
+        <!-- Bottom Controls: Quit safely / Walk away with money -->
+        <div class="flex items-center justify-between pt-4 mt-2 border-t border-blue-900/40">
+          <button onclick="stopGameSafety()" class="px-4 py-2 rounded-xl bg-rose-950 hover:bg-rose-900 border border-rose-600/60 text-rose-200 text-xs sm:text-sm font-bold transition flex items-center gap-1.5">
+            🛑 Dừng cuộc chơi an toàn
+          </button>
+          <div class="text-xs text-blue-400 italic">
+            Mốc bảo hiểm an toàn: <span class="text-yellow-400 font-bold">Câu 3</span> & <span class="text-yellow-400 font-bold">Câu 6</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: MONEY / QUESTION LADDER (THANG TIỀN THƯỞNG) -->
+      <div class="w-full lg:w-72 bg-[#091129]/95 border-2 border-blue-700/60 rounded-3xl p-4 shadow-xl flex flex-col justify-between">
+        <div>
+          <div class="text-center font-game font-bold text-yellow-400 tracking-wider text-sm uppercase pb-3 border-b border-blue-800/40 mb-2">
+            Thang Điểm Thưởng 🏆
+          </div>
+
+          <div id="ladder-container" class="space-y-1 font-game text-xs sm:text-sm">
+            <!-- Will be rendered from Question 10 down to Question 1 in JS -->
+          </div>
+        </div>
+
+        <div class="mt-4 p-3 rounded-2xl bg-blue-950/60 border border-yellow-500/20 text-center">
+          <div class="text-xs text-blue-300">Điểm số hiện tại của bạn:</div>
+          <div id="ladder-current-score" class="font-game font-extrabold text-yellow-300 text-lg">0 / 10 ĐIỂM</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MÀN HÌNH 3: KẾT QUẢ, PHÂN TÍCH & BẰNG KHEN -->
+    <!-- ============================================== -->
+    <div id="result-screen" class="hidden w-full max-w-4xl bg-[#091129] border-2 border-yellow-500/60 rounded-3xl p-6 sm:p-10 shadow-2xl relative print-card">
+      
+      <!-- Top Trophy / Banner -->
+      <div class="text-center mb-6">
+        <div id="result-trophy-icon" class="text-6xl mb-2 animate-bounce">🏆</div>
+        <h2 id="result-title" class="font-game font-black text-2xl sm:text-4xl text-yellow-400 uppercase tracking-wider mb-2">
+          HOÀN THÀNH XUẤT SẮC!
+        </h2>
+        <p id="student-greeting" class="text-base sm:text-lg text-blue-100 font-semibold"></p>
+        <p id="grade-label" class="font-game font-bold text-xl text-amber-300 mt-1"></p>
+      </div>
+
+      <!-- Money Prize Card (Certificate badge) -->
+      <div class="max-w-md mx-auto mb-8 p-4 rounded-2xl bg-gradient-to-r from-yellow-600/30 via-amber-500/20 to-yellow-600/30 border-2 border-yellow-400 text-center shadow-lg">
+        <div class="text-xs font-semibold uppercase text-yellow-200 tracking-widest">PHẦN THƯỞNG TRIỆU PHÚ ĐẠT ĐƯỢC</div>
+        <div id="final-prize-display" class="font-game font-extrabold text-3xl sm:text-4xl text-yellow-300 my-1">
+          100.000.000 VNĐ
+        </div>
+        <div id="score-display" class="text-sm font-bold text-yellow-100">
+          Điểm số: 10 / 10 Điểm
+        </div>
+      </div>
+
+      <!-- Stat Grid (Giữ nguyên các chỉ số thống kê từ code gốc) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div class="bg-blue-950/80 border border-blue-600/40 rounded-2xl p-3 sm:p-4 text-center">
+          <div class="text-2xl sm:text-3xl font-game font-bold text-blue-200" id="stat-total">10</div>
+          <div class="text-xs text-blue-400 font-semibold mt-1">Tổng số câu</div>
+        </div>
+        <div class="bg-blue-950/80 border border-emerald-600/40 rounded-2xl p-3 sm:p-4 text-center">
+          <div class="text-2xl sm:text-3xl font-game font-bold text-emerald-400" id="stat-correct">0</div>
+          <div class="text-xs text-blue-400 font-semibold mt-1">Số câu đúng</div>
+        </div>
+        <div class="bg-blue-950/80 border border-rose-600/40 rounded-2xl p-3 sm:p-4 text-center">
+          <div class="text-2xl sm:text-3xl font-game font-bold text-rose-400" id="stat-wrong">0</div>
+          <div class="text-xs text-blue-400 font-semibold mt-1">Số câu sai</div>
+        </div>
+        <div class="bg-blue-950/80 border border-amber-600/40 rounded-2xl p-3 sm:p-4 text-center">
+          <div class="text-2xl sm:text-3xl font-game font-bold text-yellow-400" id="stat-percent">0%</div>
+          <div class="text-xs text-blue-400 font-semibold mt-1">Tỉ lệ chính xác</div>
+        </div>
+      </div>
+
+      <!-- Phân Tích Năng Lực Học Tập (Toán 2 - Thêm bớt đơn vị) -->
+      <div class="bg-blue-950/60 border border-blue-700/50 rounded-2xl p-5 mb-6 text-left">
+        <h4 class="font-bold text-yellow-300 text-base sm:text-lg mb-3 flex items-center gap-2">
+          <span>📊</span> Phân Tích Năng Lực Học Tập & Đánh Giá
+        </h4>
+        <div id="analysis-content" class="text-sm text-blue-100 space-y-2 leading-relaxed">
+          <!-- Dynamic generated by JS -->
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-3 no-print mb-6">
+        <button onclick="toggleAnswerDetails()" class="px-5 py-3 rounded-xl bg-blue-800 hover:bg-blue-700 text-white font-bold text-sm sm:text-base transition flex items-center gap-2 shadow-md">
+          <span>🔍</span> <span id="btn-toggle-text">Xem Lời Giải Chi Tiết</span>
+        </button>
+        <button onclick="printCertificate()" class="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm sm:text-base transition flex items-center gap-2 shadow-md">
+          <span>🖨️</span> In Bằng Khen Triệu Phú
+        </button>
+        <button onclick="restartQuiz()" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-yellow-300 font-bold text-sm sm:text-base border border-yellow-500/40 transition flex items-center gap-2 shadow-md">
+          <span>🔄</span> Thử Thách Lại
+        </button>
+      </div>
+
+      <!-- Chi Tiết Lời Giải Từng Câu -->
+      <div id="answers-details" class="hidden mt-6 pt-6 border-t border-blue-800/60 space-y-4 text-left">
+        <h3 class="font-game font-bold text-yellow-300 text-lg uppercase text-center">
+          Đáp Án & Hướng Dẫn Giải Chi Tiết
+        </h3>
+        <div id="review-list-container" class="space-y-4">
+          <!-- Dynamic list -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ============================================== -->
+  <!-- MODAL TRỢ GIÚP & HỘP THOẠI DIALOGS -->
+  <!-- ============================================== -->
+
+  <!-- Modal: Khán Giả Trường Quay -->
+  <div id="modal-audience" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0b1536] border-2 border-yellow-400 rounded-3xl p-6 max-w-md w-full shadow-2xl text-center">
+      <div class="text-4xl mb-2">📊</div>
+      <h3 class="font-game font-bold text-xl text-yellow-300 mb-1">Ý KIẾN KHÁN GIẢ TRƯỜNG QUAY</h3>
+      <p class="text-xs text-blue-200 mb-4">100 khán giả thông thái tại trường quay đã bỏ phiếu:</p>
+      
+      <!-- Chart Bars -->
+      <div class="space-y-3 mb-6" id="audience-bars-container">
+        <!-- Bars rendered via JS -->
+      </div>
+
+      <button onclick="closeModal('modal-audience')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 font-bold text-sm">
+        Cảm ơn Khán Giả!
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Gọi Điện Cho Thầy Cô / Người Thân -->
+  <div id="modal-call" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0b1536] border-2 border-blue-400 rounded-3xl p-6 max-w-md w-full shadow-2xl text-center">
+      <div class="text-4xl mb-2">📞</div>
+      <h3 class="font-game font-bold text-xl text-yellow-300 mb-1">GỌI ĐIỆN CHO THẦY CÔ TOÁN</h3>
+      <p class="text-xs text-blue-200 mb-4">Kết nối điện thoại 30 giây với Cô Giáo Chủ Nhiệm:</p>
+      
+      <div class="bg-blue-950/80 border border-blue-500/40 rounded-2xl p-4 text-left text-sm text-yellow-100 mb-5 leading-relaxed">
+        <p class="font-bold text-yellow-300 mb-1">👩‍🏫 Cô giáo:</p>
+        <p id="call-advice-text">"Chào con! Cô đã đọc kỹ bài toán rồi. Với bài toán về thêm bớt, con nhớ: bài toán thêm vào thì làm phép tính cộng, bớt đi thì làm phép tính trừ nhé! Theo cô thì đáp án chính xác là..."</p>
+      </div>
+
+      <button onclick="closeModal('modal-call')" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm">
+        Con đã hiểu, cảm ơn Cô!
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Luật Chơi -->
+  <div id="modal-rules" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0b1536] border-2 border-yellow-500 rounded-3xl p-6 max-w-lg w-full shadow-2xl text-left">
+      <h3 class="font-game font-bold text-xl text-yellow-300 mb-3 flex items-center gap-2">
+        <span>📜</span> LUẬT CHƠI "AI LÀ TRIỆU PHÚ"
+      </h3>
+      <div class="text-sm text-blue-100 space-y-2.5 max-h-[60vh] overflow-y-auto pr-2">
+        <p>• Trò chơi gồm <strong>10 câu hỏi trắc nghiệm</strong> môn Toán 2 thuộc chủ đề <em>"Bài toán về thêm, bớt một số đơn vị"</em>.</p>
+        <p>• <strong>Không giới hạn thời gian:</strong> Các em hãy bình tĩnh, suy nghĩ cẩn thận để chọn phương án đúng nhất.</p>
+        <p>• <strong>Tự động chấm điểm:</strong> Khi em bấm chọn đáp án, hệ thống sẽ kiểm tra kết quả ngay và tự động chuyển sang câu tiếp theo.</p>
+        <p>• Có <strong>2 mốc quan trọng (mốc an toàn)</strong>: <span class="text-yellow-300 font-bold">Câu số 3</span> và <span class="text-yellow-300 font-bold">Câu số 6</span>.</p>
+        <p>• Bạn có <strong>4 quyền trợ giúp đắc lực</strong>:</p>
+        <ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-blue-200">
+          <li><strong>50:50:</strong> Máy tính loại bỏ 2 phương án sai.</li>
+          <li><strong>Gọi điện người thân:</strong> Nhận gợi ý trực tiếp từ Cô giáo.</li>
+          <li><strong>Hỏi khán giả:</strong> Khảo sát biểu đồ lựa chọn của khán giả.</li>
+          <li><strong>Đổi câu hỏi:</strong> Đổi sang một câu hỏi khác cùng độ khó.</li>
+        </ul>
+        <p>• Trả lời đúng cả 10 câu, bạn sẽ trở thành <strong>TRIỆU PHÚ TOÁN HỌC</strong> xuất sắc!</p>
+      </div>
+      <div class="mt-5">
+        <button onclick="closeModal('modal-rules')" class="w-full py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold text-sm">
+          Đã Rõ Luật Chơi!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Xác Nhận Dừng Cuộc Chơi (Thay thế Confirm) -->
+  <div id="modal-confirm-stop" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0b1536] border-2 border-rose-500 rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center">
+      <div class="text-4xl mb-2">⚠️</div>
+      <h3 class="font-game font-bold text-lg text-yellow-300 mb-2">DỪNG CUỘC CHƠI AN TOÀN?</h3>
+      <p class="text-xs sm:text-sm text-blue-100 mb-5 leading-relaxed">
+        Bạn có muốn dừng tại đây để bảo toàn số điểm và phần thưởng hiện có không?
+      </p>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="closeModal('modal-confirm-stop')" class="py-2.5 rounded-xl bg-slate-800 text-blue-200 font-bold text-sm">
+          Tiếp Tục Chơi
+        </button>
+        <button onclick="confirmStopGame()" class="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm">
+          Dừng Lại
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       HỆ THỐNG ÂM THANH MÔ PHỎNG (WEB AUDIO API - ZERO EXTERNAL ASSET DEPENDENCY)
+       ========================================================================= */
+    let audioCtx = null;
+    let isSoundOn = true;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function toggleAudio() {
+      isSoundOn = !isSoundOn;
+      document.getElementById('sound-icon').textContent = isSoundOn ? '🔊' : '🔇';
+      document.getElementById('sound-text').textContent = isSoundOn ? 'Âm thanh: BẬT' : 'Âm thanh: TẮT';
+    }
+
+    // Play suspense heartbeat tone
+    function playHeartbeat() {
+      if (!isSoundOn) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(65, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(45, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.2);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    // Play lock answer tone (Suspense ping)
+    function playLockSound() {
+      if (!isSoundOn) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(540, ctx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) {}
+    }
+
+    // Play correct answer fanfare
+    function playCorrectSound() {
+      if (!isSoundOn) return;
+      try {
+        const ctx = getAudioContext();
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+        notes.forEach((freq, index) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + index * 0.1);
+          gain.gain.setValueAtTime(0, ctx.currentTime + index * 0.1);
+          gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + index * 0.1 + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + index * 0.1 + 0.45);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + index * 0.1);
+          osc.stop(ctx.currentTime + index * 0.1 + 0.5);
+        });
+      } catch (e) {}
+    }
+
+    // Play wrong answer sound
+    function playWrongSound() {
+      if (!isSoundOn) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(75, ctx.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.55);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.6);
+      } catch (e) {}
+    }
+
+    // Play lifeline activation sound
+    function playLifelineSound() {
+      if (!isSoundOn) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(880, ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.25);
+      } catch (e) {}
+    }
+
+    /* =========================================================================
+       DỮ LIỆU CÂU HỎI VÀ THANG TIỀN THƯỞNG (TOÁN 2 - KẾT NỐI TRI THỨC)
+       ========================================================================= */
+    const LADDER = [
+      { step: 1, prize: "200.000 VNĐ", score: 1, isMilestone: false },
+      { step: 2, prize: "400.000 VNĐ", score: 2, isMilestone: false },
+      { step: 3, prize: "1.000.000 VNĐ", score: 3, isMilestone: true },  // Mốc 1
+      { step: 4, prize: "2.000.000 VNĐ", score: 4, isMilestone: false },
+      { step: 5, prize: "5.000.000 VNĐ", score: 5, isMilestone: false },
+      { step: 6, prize: "10.000.000 VNĐ", score: 6, isMilestone: true }, // Mốc 2
+      { step: 7, prize: "20.000.000 VNĐ", score: 7, isMilestone: false },
+      { step: 8, prize: "40.000.000 VNĐ", score: 8, isMilestone: false },
+      { step: 9, prize: "75.000.000 VNĐ", score: 9, isMilestone: false },
+      { step: 10, prize: "150.000.000 VNĐ", score: 10, isMilestone: true } // Mốc Đỉnh
+    ];
+
+    // Ngân hàng 10 câu hỏi chính + 2 câu hỏi dự phòng cho trợ giúp đổi câu hỏi
+    const QUESTIONS = [
+      {
+        id: 1,
+        level: "Mức độ 1: Nhận biết",
+        type: "Bài toán thêm",
+        question: "Mai có 8 bông hoa, Mai hái thêm 4 bông hoa nữa. Hỏi Mai có tất cả bao nhiêu bông hoa?",
+        options: [
+          { text: "11 bông hoa", isCorrect: false },
+          { text: "12 bông hoa", isCorrect: true },
+          { text: "14 bông hoa", isCorrect: false },
+          { text: "4 bông hoa", isCorrect: false }
+        ],
+        explanation: "Bài toán 'hái thêm' ta thực hiện phép tính CỘNG: 8 + 4 = 12 (bông hoa).",
+        hintAdvice: "Từ khóa ở đây là 'hái thêm', con chỉ việc lấy 8 cộng thêm 4 là ra 12 bông nhé!"
+      },
+      {
+        id: 2,
+        level: "Mức độ 1: Nhận biết",
+        type: "Bài toán bớt",
+        question: "Trên cây có 15 con chim đang đậu, bỗng có 6 con chim bay đi. Hỏi trên cây còn lại bao nhiêu con chim?",
+        options: [
+          { text: "9 con chim", isCorrect: true },
+          { text: "10 con chim", isCorrect: false },
+          { text: "8 con chim", isCorrect: false },
+          { text: "21 con chim", isCorrect: false }
+        ],
+        explanation: "Bài toán 'bay đi' (bớt đi) ta làm phép tính TRỪ: 15 - 6 = 9 (con chim).",
+        hintAdvice: "Chim bay đi tức là bớt đi, con lấy 15 trừ 6 sẽ được 9 con chim!"
+      },
+      {
+        id: 3,
+        level: "Mức độ 1: Khái niệm (Mốc An Toàn 1)",
+        type: "Quy tắc toán học",
+        question: "Muốn tìm một số 'nhiều hơn' một số đã cho một số đơn vị, ta thực hiện phép tính gì?",
+        options: [
+          { text: "Phép tính Trừ", isCorrect: false },
+          { text: "Phép tính Cộng", isCorrect: true },
+          { text: "Phép tính Nhân", isCorrect: false },
+          { text: "Phép tính Chia", isCorrect: false }
+        ],
+        explanation: "Quy tắc: Muốn tìm một số nhiều hơn số đã cho một số đơn vị, ta lấy số đã cho CỘNG với phần nhiều hơn.",
+        hintAdvice: "Nhiều hơn hay thêm vào luôn gắn liền với PHÉP TÍNH CỘNG con nhé!"
+      },
+      {
+        id: 4,
+        level: "Mức độ 2: Thông hiểu",
+        type: "Bài toán về ít hơn",
+        question: "An có 14 viên bi. Nam có ít hơn An 5 viên bi. Hỏi Nam có bao nhiêu viên bi?",
+        options: [
+          { text: "19 viên bi", isCorrect: false },
+          { text: "9 viên bi", isCorrect: true },
+          { text: "8 viên bi", isCorrect: false },
+          { text: "10 viên bi", isCorrect: false }
+        ],
+        explanation: "Nam có ít hơn An, ta làm phép trừ: 14 - 5 = 9 (viên bi).",
+        hintAdvice: "Nam ít hơn An 5 viên, con lấy số bi của An là 14 trừ đi 5 nhé, kết quả là 9."
+      },
+      {
+        id: 5,
+        level: "Mức độ 2: Thông hiểu",
+        type: "Bài toán về nhiều hơn",
+        question: "Đàn vịt có 18 con đang bơi dưới ao. Bác nông dân lùa thêm 7 con vịt nữa xuống ao. Hỏi dưới ao có tất cả bao nhiêu con vịt?",
+        options: [
+          { text: "25 con vịt", isCorrect: true },
+          { text: "24 con vịt", isCorrect: false },
+          { text: "11 con vịt", isCorrect: false },
+          { text: "26 con vịt", isCorrect: false }
+        ],
+        explanation: "Lùa thêm 7 con vịt, ta thực hiện phép tính cộng có nhớ: 18 + 7 = 25 (con vịt).",
+        hintAdvice: "Ban đầu có 18 con, thêm 7 con: 18 + 7 = 25 con vịt đấy con!"
+      },
+      {
+        id: 6,
+        level: "Mức độ 2: Vận dụng (Mốc An Toàn 2)",
+        type: "Bài toán bớt có lời văn",
+        question: "Một rổ cam có 23 quả. Mẹ lấy ra 8 quả để biếu ông bà. Hỏi trong rổ còn lại bao nhiêu quả cam?",
+        options: [
+          { text: "14 quả cam", isCorrect: false },
+          { text: "15 quả cam", isCorrect: true },
+          { text: "16 quả cam", isCorrect: false },
+          { text: "31 quả cam", isCorrect: false }
+        ],
+        explanation: "Lấy ra 8 quả ta làm phép trừ: 23 - 8 = 15 (quả cam).",
+        hintAdvice: "Lấy ra 8 quả thì làm phép trừ: 23 trừ 8 bằng 15 quả cam nhé!"
+      },
+      {
+        id: 7,
+        level: "Mức độ 2: Vận dụng",
+        type: "Bài toán về nhiều hơn",
+        question: "Vườn nhà bác Ba trồng 26 cây bưởi. Vườn nhà chú Tư trồng nhiều hơn nhà bác Ba 9 cây. Hỏi vườn nhà chú Tư trồng bao nhiêu cây bưởi?",
+        options: [
+          { text: "17 cây bưởi", isCorrect: false },
+          { text: "34 cây bưởi", isCorrect: false },
+          { text: "35 cây bưởi", isCorrect: true },
+          { text: "36 cây bưởi", isCorrect: false }
+        ],
+        explanation: "Nhà chú Tư trồng nhiều hơn: 26 + 9 = 35 (cây bưởi).",
+        hintAdvice: "Nhiều hơn 9 cây thì cộng thêm 9: 26 + 9 = 35 cây bưởi."
+      },
+      {
+        id: 8,
+        level: "Mức độ 3: Vận dụng nâng cao",
+        type: "Bài toán hai bước tính",
+        question: "Trong bãi đỗ có 34 xe máy. Lúc sáng có 8 xe rời đi, lúc chiều có 5 xe khác vào thêm. Hỏi lúc này bãi đỗ có bao nhiêu xe máy?",
+        options: [
+          { text: "31 xe máy", isCorrect: true },
+          { text: "26 xe máy", isCorrect: false },
+          { text: "47 xe máy", isCorrect: false },
+          { text: "30 xe máy", isCorrect: false }
+        ],
+        explanation: "Bước 1: Sau khi 8 xe rời đi còn 34 - 8 = 26 xe. Bước 2: Thêm 5 xe thì có 26 + 5 = 31 (xe máy).",
+        hintAdvice: "Bài toán này gồm 2 bước: 34 bớt 8 còn 26 xe, sau đó thêm 5 xe: 26 + 5 = 31 xe máy!"
+      },
+      {
+        id: 9,
+        level: "Mức độ 3: Vận dụng nâng cao",
+        type: "Bài toán tư duy tổng hợp",
+        question: "Lớp 2A có 19 học sinh nữ. Số học sinh nam nhiều hơn số học sinh nữ là 5 bạn. Hỏi lớp 2A có TẤT CẢ bao nhiêu học sinh?",
+        options: [
+          { text: "24 học sinh", isCorrect: false },
+          { text: "38 học sinh", isCorrect: false },
+          { text: "43 học sinh", isCorrect: true },
+          { text: "45 học sinh", isCorrect: false }
+        ],
+        explanation: "Số học sinh nam là: 19 + 5 = 24 (bạn). Cả lớp có tất cả là: 19 + 24 = 43 (học sinh).",
+        hintAdvice: "Chú ý đọc kỹ câu hỏi! Tìm số bạn nam trước: 19 + 5 = 24. Cả lớp có tất cả: 19 + 24 = 43 bạn nhé!"
+      },
+      {
+        id: 10,
+        level: "Mức độ 3: Đỉnh Triệu Phú",
+        type: "Tư duy logic thêm - bớt",
+        question: "Hà có 16 chiếc kẹo. Nếu Hà cho Bình 4 chiếc kẹo thì số kẹo của hai bạn bằng nhau. Hỏi lúc đầu Bình có bao nhiêu chiếc kẹo?",
+        options: [
+          { text: "8 chiếc kẹo", isCorrect: true },
+          { text: "12 chiếc kẹo", isCorrect: false },
+          { text: "10 chiếc kẹo", isCorrect: false },
+          { text: "4 chiếc kẹo", isCorrect: false }
+        ],
+        explanation: "Sau khi Hà cho Bình 4 cái kẹo, Hà còn lại: 16 - 4 = 12 chiếc. Lúc này Bình cũng có 12 chiếc. Do được Hà cho 4 chiếc nên lúc đầu Bình có: 12 - 4 = 8 chiếc kẹo.",
+        hintAdvice: "Câu hỏi quyết định ngôi vị triệu phú! Hà cho đi 4 chiếc thì còn 12 chiếc. Để Bình có 12 chiếc sau khi nhận 4 chiếc thì lúc đầu Bình phải có: 12 - 4 = 8 chiếc kẹo!"
+      }
+    ];
+
+    // Câu hỏi dự phòng khi người chơi dùng quyền Đổi câu hỏi
+    const BACKUP_QUESTION = {
+      id: 99,
+      level: "Mức độ 2: Câu hỏi thay thế",
+      type: "Bài toán bớt đơn vị",
+      question: "Một sợi dây dài 45 cm, bạn Hoa dùng kéo cắt bớt đi một đoạn dài 18 cm. Hỏi đoạn dây còn lại dài bao nhiêu xăng-ti-mét?",
+      options: [
+        { text: "27 cm", isCorrect: true },
+        { text: "28 cm", isCorrect: false },
+        { text: "37 cm", isCorrect: false },
+        { text: "63 cm", isCorrect: false }
+      ],
+      explanation: "Cắt bớt đi 18 cm ta làm phép trừ: 45 - 18 = 27 (cm).",
+      hintAdvice: "Cắt bớt đi tức là làm phép tính trừ: 45 - 18 = 27 cm nhé con!"
+    };
+
+    /* =========================================================================
+       TRẠNG THÁI GAME & THÔNG TIN THÍ SINH
+       ========================================================================= */
+    let player = {
+      name: "",
+      class: "",
+      stt: "",
+      avatar: "🦁"
+    };
+
+    let currentQuestionIndex = 0; // 0 -> 9
+    let activeQuestionList = []; // clone of QUESTIONS
+    let selectedOptionIndex = null;
+    let isAnsweringLocked = false;
+
+    // Lifeline states
+    let lifelines = {
+      lifeline5050: true,
+      lifelineCall: true,
+      lifelineAudience: true,
+      lifelineSwap: true
+    };
+
+    // User's history for detailed review
+    let quizHistory = [];
+
+    /* =========================================================================
+       QUẢN LÝ MÀN HÌNH VÀ GIAO DIỆN
+       ========================================================================= */
+    function showScreen(screenId) {
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    function selectAvatar(avatar) {
+      player.avatar = avatar;
+      document.querySelectorAll('.avatar-option').forEach(btn => {
+        if (btn.innerText.includes(avatar)) {
+          btn.className = "avatar-option p-2 text-2xl rounded-xl border border-yellow-400 bg-yellow-500/20 hover:scale-110 transition active:scale-95 text-center";
+        } else {
+          btn.className = "avatar-option p-2 text-2xl rounded-xl border border-blue-600 bg-blue-900/30 hover:scale-110 transition active:scale-95 text-center";
+        }
+      });
+    }
+
+    /* Bắt đầu bài làm / Chuyển vào Ghế Nóng */
+    function startGame(e) {
+      e.preventDefault();
+      const hoTen = document.getElementById('hoTen').value.trim();
+      const lop = document.getElementById('lop').value.trim();
+      const stt = document.getElementById('stt').value.trim();
+
+      if (!hoTen || !lop) return;
+
+      player.name = hoTen;
+      player.class = lop;
+      player.stt = stt || "00";
+
+      // Reset state
+      activeQuestionList = JSON.parse(JSON.stringify(QUESTIONS));
+      currentQuestionIndex = 0;
+      quizHistory = [];
+      lifelines = {
+        lifeline5050: true,
+        lifelineCall: true,
+        lifelineAudience: true,
+        lifelineSwap: true
+      };
+
+      // Reset lifeline UI buttons
+      document.querySelectorAll('.lifeline-btn').forEach(btn => btn.disabled = false);
+
+      // Update Player Profile in Quiz Screen
+      document.getElementById('player-name-display').textContent = player.name;
+      document.getElementById('player-class-display').textContent = `Lớp ${player.class} • SBD: ${player.stt}`;
+      document.getElementById('player-avatar-badge').textContent = player.avatar;
+
+      // Render Money Ladder
+      renderLadder();
+
+      // Show Quiz Arena
+      showScreen('quiz-screen');
+      loadQuestion(currentQuestionIndex);
+    }
+
+    /* Hiển thị thang tiền thưởng */
+    function renderLadder() {
+      const ladderContainer = document.getElementById('ladder-container');
+      ladderContainer.innerHTML = '';
+
+      // Loop from step 10 down to 1
+      for (let i = LADDER.length - 1; i >= 0; i--) {
+        const item = LADDER[i];
+        const isCurrent = i === currentQuestionIndex;
+        const row = document.createElement('div');
+        row.id = `ladder-row-${i}`;
+        row.className = `ladder-item flex items-center justify-between px-3 py-1.5 rounded-lg border border-transparent ${item.isMilestone ? 'milestone' : 'text-blue-200'} ${isCurrent ? 'active' : ''}`;
+        
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-5 text-right font-bold ${item.isMilestone ? 'text-yellow-400' : 'text-blue-400'}">${item.step}</span>
+            <span>${item.isMilestone ? '💎' : '•'}</span>
+            <span class="text-xs uppercase">${item.isMilestone ? 'MỐC ' + item.step : 'Câu ' + item.step}</span>
+          </div>
+          <div class="font-extrabold tracking-wide">${item.prize}</div>
+        `;
+        ladderContainer.appendChild(row);
+      }
+
+      document.getElementById('ladder-current-score').textContent = `${currentQuestionIndex} / 10 ĐIỂM`;
+    }
+
+    /* Tải câu hỏi hiện tại */
+    function loadQuestion(index) {
+      if (index >= activeQuestionList.length) {
+        finishGame(true);
+        return;
+      }
+
+      isAnsweringLocked = false;
+      selectedOptionIndex = null;
+
+      const q = activeQuestionList[index];
+      const ladderInfo = LADDER[index];
+
+      // Update headers
+      document.getElementById('level-badge').textContent = q.level;
+      document.getElementById('type-badge').textContent = q.type;
+      document.getElementById('current-prize-tag').textContent = `CÂU ${index + 1}: ${ladderInfo.prize}`;
+      document.getElementById('question-text').textContent = q.question;
+      document.getElementById('host-speech').textContent = `Câu số ${index + 1} trị giá ${ladderInfo.prize}. Em hãy đọc kỹ đề và bấm chọn phương án chính xác nhé!`;
+
+      // Render Options A, B, C, D
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+      const labels = ['A', 'B', 'C', 'D'];
+
+      q.options.forEach((opt, optIdx) => {
+        const btn = document.createElement('button');
+        btn.id = `option-btn-${optIdx}`;
+        btn.onclick = () => selectAnswer(optIdx);
+        btn.className = "btn-hex w-full py-4 px-4 sm:px-6 text-left flex items-center gap-3 text-sm sm:text-base font-bold text-white transition-all";
+        btn.innerHTML = `
+          <span class="font-game text-amber-400 font-extrabold text-base sm:text-lg min-w-[24px]">${labels[optIdx]}:</span>
+          <span class="flex-1 leading-snug">${opt.text}</span>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+
+      // Update ladder active item
+      renderLadder();
+    }
+
+    /* Người chơi bấm chọn đáp án: Chấm điểm ngay lập tức và tự động chuyển câu */
+    function selectAnswer(optIdx) {
+      if (isAnsweringLocked) return;
+      isAnsweringLocked = true;
+
+      selectedOptionIndex = optIdx;
+      const q = activeQuestionList[currentQuestionIndex];
+      const correctIdx = q.options.findIndex(o => o.isCorrect);
+      const isCorrect = optIdx === correctIdx;
+
+      const userBtn = document.getElementById(`option-btn-${optIdx}`);
+      const correctBtn = document.getElementById(`option-btn-${correctIdx}`);
+
+      // Ghi nhận lịch sử bài làm của học sinh
+      quizHistory.push({
+        question: q.question,
+        userAnswer: q.options[optIdx].text,
+        correctAnswer: q.options[correctIdx].text,
+        isCorrect: isCorrect,
+        explanation: q.explanation
+      });
+
+      // Hiển thị kết quả đúng / sai trực quan ngay tức thì
+      if (isCorrect) {
+        userBtn.classList.add('correct');
+        playCorrectSound();
+        const prizeNow = LADDER[currentQuestionIndex].prize;
+        document.getElementById('host-speech').textContent = `🎉 CHÍNH XÁC! Giỏi lắm, em đã nhận được ${prizeNow}!`;
+      } else {
+        userBtn.classList.add('wrong');
+        if (correctBtn) correctBtn.classList.add('correct');
+        playWrongSound();
+        document.getElementById('host-speech').textContent = `💡 Chưa đúng rồi! Đáp án đúng là: ${q.options[correctIdx].text}. Em hãy cố gắng ở câu tiếp theo nhé!`;
+      }
+
+      // Cập nhật điểm tích lũy hiển thị
+      const correctSoFar = quizHistory.filter(h => h.isCorrect).length;
+      document.getElementById('ladder-current-score').textContent = `${correctSoFar} / 10 ĐIỂM`;
+
+      // Tự động chuyển sang câu tiếp theo sau 1.4 giây (đủ để học sinh quan sát kết quả mà không phải chờ đợi)
+      setTimeout(() => {
+        if (currentQuestionIndex < activeQuestionList.length - 1) {
+          currentQuestionIndex++;
+          loadQuestion(currentQuestionIndex);
+        } else {
+          finishGame();
+        }
+      }, 1400);
+    }
+
+    /* =========================================================================
+       4 QUYỀN TRỢ GIÚP ĐẶC TRƯNG CỦA AI LÀ TRIỆU PHÚ
+       ========================================================================= */
+
+    // 1. Trợ giúp 50:50
+    function useLifeline5050() {
+      if (!lifelines.lifeline5050 || isAnsweringLocked) return;
+      lifelines.lifeline5050 = false;
+      document.getElementById('lifeline-5050').disabled = true;
+      playLifelineSound();
+
+      const q = activeQuestionList[currentQuestionIndex];
+      const correctIdx = q.options.findIndex(o => o.isCorrect);
+
+      // Find wrong options indexes
+      const wrongIndices = [];
+      q.options.forEach((opt, idx) => {
+        if (idx !== correctIdx) wrongIndices.push(idx);
+      });
+
+      // Randomly eliminate 2 wrong options
+      shuffleArray(wrongIndices);
+      const toEliminate = wrongIndices.slice(0, 2);
+
+      toEliminate.forEach(idx => {
+        const btn = document.getElementById(`option-btn-${idx}`);
+        if (btn) btn.classList.add('eliminated');
+      });
+
+      document.getElementById('host-speech').textContent = "Máy tính đã loại bỏ 2 phương án sai. Chỉ còn lại 2 sự lựa chọn!";
+    }
+
+    // 2. Trợ giúp Gọi điện cho Thầy Cô / Người thân
+    function useLifelineCall() {
+      if (!lifelines.lifelineCall || isAnsweringLocked) return;
+      lifelines.lifelineCall = false;
+      document.getElementById('lifeline-call').disabled = true;
+      playLifelineSound();
+
+      const q = activeQuestionList[currentQuestionIndex];
+      document.getElementById('call-advice-text').textContent = `"${q.hintAdvice}"`;
+      document.getElementById('modal-call').classList.remove('hidden');
+    }
+
+    // 3. Trợ giúp Khán giả trường quay
+    function useLifelineAudience() {
+      if (!lifelines.lifelineAudience || isAnsweringLocked) return;
+      lifelines.lifelineAudience = false;
+      document.getElementById('lifeline-audience').disabled = true;
+      playLifelineSound();
+
+      const q = activeQuestionList[currentQuestionIndex];
+      const correctIdx = q.options.findIndex(o => o.isCorrect);
+
+      // Distribute 100% with high probability for correct answer (70-85%)
+      const correctPercent = Math.floor(Math.random() * 15) + 70;
+      let remaining = 100 - correctPercent;
+
+      const wrongPercents = [0, 0, 0];
+      wrongPercents[0] = Math.floor(Math.random() * (remaining - 4));
+      remaining -= wrongPercents[0];
+      wrongPercents[1] = Math.floor(Math.random() * (remaining - 2));
+      remaining -= wrongPercents[1];
+      wrongPercents[2] = remaining;
+
+      let wrongPointer = 0;
+      const percentages = [0, 0, 0, 0];
+      for (let i = 0; i < 4; i++) {
+        if (i === correctIdx) {
+          percentages[i] = correctPercent;
+        } else {
+          percentages[i] = wrongPercents[wrongPointer++];
+        }
+      }
+
+      // Render bar chart in modal
+      const labels = ['A', 'B', 'C', 'D'];
+      const container = document.getElementById('audience-bars-container');
+      container.innerHTML = '';
+
+      labels.forEach((label, idx) => {
+        const row = document.createElement('div');
+        row.className = "flex items-center gap-3 text-xs sm:text-sm font-bold";
+        row.innerHTML = `
+          <span class="w-6 text-yellow-400 font-extrabold text-base">${label}:</span>
+          <div class="flex-1 bg-blue-950 rounded-full h-5 overflow-hidden border border-blue-500/40 p-0.5">
+            <div class="bg-gradient-to-r from-amber-400 to-yellow-300 h-full rounded-full transition-all duration-700" style="width: ${percentages[idx]}%"></div>
+          </div>
+          <span class="w-10 text-right text-yellow-300">${percentages[idx]}%</span>
+        `;
+        container.appendChild(row);
+      });
+
+      document.getElementById('modal-audience').classList.remove('hidden');
+    }
+
+    // 4. Trợ giúp Đổi câu hỏi
+    function useLifelineSwap() {
+      if (!lifelines.lifelineSwap || isAnsweringLocked) return;
+      lifelines.lifelineSwap = false;
+      document.getElementById('lifeline-swap').disabled = true;
+      playLifelineSound();
+
+      // Replace current question with BACKUP_QUESTION
+      activeQuestionList[currentQuestionIndex] = JSON.parse(JSON.stringify(BACKUP_QUESTION));
+      loadQuestion(currentQuestionIndex);
+      document.getElementById('host-speech').textContent = "Bạn đã kích hoạt quyền Đổi câu hỏi! Một câu hỏi mới đã được đưa ra.";
+    }
+
+    // Modal helpers
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function openRulesModal() {
+      document.getElementById('modal-rules').classList.remove('hidden');
+    }
+
+    /* Dừng cuộc chơi an toàn */
+    function stopGameSafety() {
+      if (isAnsweringLocked) return;
+      document.getElementById('modal-confirm-stop').classList.remove('hidden');
+    }
+
+    function confirmStopGame() {
+      closeModal('modal-confirm-stop');
+      finishGame(false, "Thí sinh chủ động dừng cuộc chơi an toàn.");
+    }
+
+    /* =========================================================================
+       TỔNG KẾT, PHÂN TÍCH NĂNG LỰC & XUẤT BẰNG KHEN
+       ========================================================================= */
+    function finishGame(stopReason = "") {
+      showScreen('result-screen');
+
+      const correctCount = quizHistory.filter(h => h.isCorrect).length;
+      const totalCount = activeQuestionList.length;
+      const wrongCount = totalCount - correctCount;
+      const percent = Math.round((correctCount / totalCount) * 100);
+
+      // Xác định phần thưởng tiền mặt theo số câu đúng học sinh đạt được
+      let guaranteedPrize = "0 VNĐ";
+      if (correctCount === totalCount) {
+        guaranteedPrize = "150.000.000 VNĐ";
+      } else if (correctCount > 0) {
+        guaranteedPrize = LADDER[correctCount - 1].prize;
+      }
+
+      // Update Result UI
+      document.getElementById('student-greeting').textContent = `Thí sinh: ${player.name} • Lớp: ${player.class} (STT: ${player.stt})`;
+      document.getElementById('final-prize-display').textContent = guaranteedPrize;
+      document.getElementById('score-display').textContent = `Điểm số đạt được: ${correctCount} / 10 Điểm`;
+
+      // Update stat grid
+      document.getElementById('stat-total').textContent = totalCount;
+      document.getElementById('stat-correct').textContent = correctCount;
+      document.getElementById('stat-wrong').textContent = wrongCount;
+      document.getElementById('stat-percent').textContent = `${percent}%`;
+
+      // Set Title and Grade Badge
+      const trophyEl = document.getElementById('result-trophy-icon');
+      const titleEl = document.getElementById('result-title');
+      const gradeEl = document.getElementById('grade-label');
+
+      if (isWinner || correctCount === 10) {
+        trophyEl.textContent = '👑';
+        titleEl.textContent = 'TRIỆU PHÚ TOÁN HỌC XUẤT SẮC!';
+        gradeEl.textContent = '🌟 Danh hiệu: Đại Kiện Tướng Toán Lớp 2';
+      } else if (correctCount >= 8) {
+        trophyEl.textContent = '🥇';
+        titleEl.textContent = 'THÀNH TÍCH XUẤT SẮC!';
+        gradeEl.textContent = '🌟 Danh hiệu: Nhà Thông Thái Nhí';
+      } else if (correctCount >= 6) {
+        trophyEl.textContent = '🥈';
+        titleEl.textContent = 'HOÀN THÀNH TỐT THỬ THÁCH!';
+        gradeEl.textContent = '🌟 Danh hiệu: Dũng Sĩ Vượt Mốc An Toàn';
+      } else {
+        trophyEl.textContent = '🥉';
+        titleEl.textContent = 'CẦN CỐ GẮNG THÊM!';
+        gradeEl.textContent = '🌟 Danh hiệu: Học Viên Tiềm Năng';
+      }
+
+      // Phân tích năng lực chuyên sâu (Toán 2 - Thêm bớt đơn vị)
+      generateLearningAnalysis(correctCount, percent);
+
+      // Render Review Details
+      renderReviewDetails();
+    }
+
+    /* Sinh nội dung phân tích năng lực học sinh */
+    function generateLearningAnalysis(correct, percent) {
+      const container = document.getElementById('analysis-content');
+      let analysisHTML = '';
+
+      if (percent >= 90) {
+        analysisHTML = `
+          <p>• <strong>Kỹ năng nhận biết & giải toán:</strong> Em nắm rất chắc bản chất của dạng toán về thêm, bớt một số đơn vị. Biết chuyển đổi chính xác từ ngôn ngữ đời sống (thêm vào, bay đi, lấy ra, nhiều hơn, ít hơn) sang phép tính tương ứng.</p>
+          <p>• <strong>Kỹ năng tính nhẩm có nhớ:</strong> Tính nhẩm cộng, trừ qua 10 trong phạm vi 100 cực kỳ nhanh và chuẩn xác.</p>
+          <p>• <strong>Tư duy logic & giải toán 2 bước:</strong> Đạt mức độ xuất sắc khi giải quyết trọn vẹn các bài toán logic hỏi ngược và bài toán hai bước tính.</p>
+        `;
+      } else if (percent >= 60) {
+        analysisHTML = `
+          <p>• <strong>Kỹ năng cơ bản:</strong> Em đã hiểu và làm tốt các bài toán trực tiếp về thêm và bớt một số đơn vị đơn giản.</p>
+          <p>• <strong>Điểm cần lưu ý:</strong> Cần rèn luyện thêm ở dạng bài toán hai bước tính và các câu hỏi tư duy logic (như dạng bài: <em>"Hà cho Bình kẹo để hai bạn bằng nhau"</em>). Đọc kỹ đề bài để tránh nhầm lẫn giữa số ban đầu và số lúc sau.</p>
+          <p>• <strong>Lời khuyên:</strong> Hãy vẽ tóm tắt bằng sơ đồ đoạn thẳng để dễ dàng hình dung bài toán hơn!</p>
+        `;
+      } else {
+        analysisHTML = `
+          <p>• <strong>Kỹ năng cơ bản:</strong> Em cần ôn tập lại mối liên hệ giữa các cụm từ: "thêm vào/nhiều hơn" (phép cộng +) và "bớt đi/lấy ra/ít hơn" (phép trừ -).</p>
+          <p>• <strong>Phương pháp học tập:</strong> Nên làm lại các bài tập trong Vở bài tập Toán 2 (Bài 9), chú ý đặt tính cẩn thận các phép cộng trừ có nhớ trong phạm vi 100.</p>
+        `;
+      }
+
+      container.innerHTML = analysisHTML;
+    }
+
+    /* Hiển thị chi tiết đáp án và lời giải */
+    function renderReviewDetails() {
+      const container = document.getElementById('review-list-container');
+      container.innerHTML = '';
+
+      quizHistory.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-2xl border ${item.isCorrect ? 'bg-emerald-950/30 border-emerald-500/40' : 'bg-rose-950/30 border-rose-500/40'} text-xs sm:text-sm`;
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-bold font-game text-yellow-300">Câu ${idx + 1}: ${item.isCorrect ? '✅ Đúng' : '❌ Chưa đúng'}</span>
+          </div>
+          <div class="font-semibold text-white mb-2 leading-relaxed">${item.question}</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs mb-2">
+            <div class="p-2 rounded-lg bg-blue-950/70 border border-blue-800/40">
+              <span class="text-blue-300">Lựa chọn của em:</span>
+              <span class="font-bold ml-1 ${item.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${item.userAnswer}</span>
+            </div>
+            <div class="p-2 rounded-lg bg-blue-950/70 border border-blue-800/40">
+              <span class="text-blue-300">Đáp án chính xác:</span>
+              <span class="font-bold text-emerald-400 ml-1">${item.correctAnswer}</span>
+            </div>
+          </div>
+          <div class="text-blue-200 text-xs italic bg-blue-900/20 p-2 rounded-lg border border-blue-800/30">
+            💡 <strong>Hướng dẫn giải:</strong> ${item.explanation}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* Ẩn / Hiện phần xem chi tiết */
+    function toggleAnswerDetails() {
+      const details = document.getElementById('answers-details');
+      const btnText = document.getElementById('btn-toggle-text');
+      if (details.classList.contains('hidden')) {
+        details.classList.remove('hidden');
+        btnText.textContent = "Thu Gọn Lời Giải";
+      } else {
+        details.classList.add('hidden');
+        btnText.textContent = "Xem Lời Giải Chi Tiết";
+      }
+    }
+
+    /* In bằng khen triệu phú */
+    function printCertificate() {
+      window.print();
+    }
+
+    /* Chơi lại từ đầu */
+    function restartQuiz() {
+      showScreen('start-screen');
+    }
+
+    /* Helper Shuffle Array */
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+  </script>
+</body>
+</html>
